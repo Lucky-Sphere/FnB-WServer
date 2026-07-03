@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "FNB Kitchen",
+    "slug": "fnb-kitchen",
+    "version": "1.0.0",
+    "orientation": "default",
+    "scheme": "fnb-kitchen",
+    "platforms": ["ios", "android"],
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#1a1a2e" } },
+    "plugins": ["expo-router"]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "FNB Client",
+    "slug": "fnb-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "fnb-client",
+    "platforms": ["ios", "android"],
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#ffffff" } },
+    "plugins": ["expo-router"]
+  }
+}

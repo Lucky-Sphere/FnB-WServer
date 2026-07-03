@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+Admin/dist/
+Cashier/dist/
+
+# Expo
+.expo/
+*.expo
+
+# Go binary
+*.exe
+*.exe~
+
+# Embedded PostgreSQL data & binaries
+Server/data/pg/
+
+# Database files (SQLite leftovers)
+*.db
+*.db-shm
+*.db-wal
+data/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
