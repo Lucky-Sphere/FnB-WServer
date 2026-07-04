@@ -115,7 +115,7 @@ func RateLimit(next http.HandlerFunc) http.HandlerFunc {
 func AdminOnly(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         role, ok := r.Context().Value(RoleContextKey).(string)
-        if !ok || role != "admin" {
+        if !ok || (role != "admin" && role != "cashier") {
             http.Error(w, `{"error":"admin access required"}`, http.StatusForbidden)
             return
         }

@@ -106,7 +106,7 @@ export default function Members() {
                 <td style={{ padding: "10px 12px", color: "#666", fontSize: "13px" }}>{u.username}</td>
                 <td style={{ padding: "10px 12px", fontWeight: 600 }}>{u.name}</td>
                 <td style={{ padding: "10px 12px" }}>
-                  <span style={{ padding: "2px 8px", borderRadius: "10px", fontSize: "11px", fontWeight: 600, background: u.role === "admin" ? "#e3f2fd" : "#f3e5f5", color: u.role === "admin" ? "#1565C0" : "#7B1FA2", textTransform: "capitalize" }}>{u.role === "customer" ? "Client" : u.role === "kitchen" ? "Kitchen" : u.role}</span>
+                  <span style={{ padding: "2px 8px", borderRadius: "10px", fontSize: "11px", fontWeight: 600, background: u.role === "admin" ? "#e3f2fd" : u.role === "cashier" ? "#fff3e0" : "#f3e5f5", color: u.role === "admin" ? "#1565C0" : u.role === "cashier" ? "#e65100" : "#7B1FA2", textTransform: "capitalize" }}>{u.role === "customer" ? "Client" : u.role === "kitchen" ? "Kitchen" : u.role === "cashier" ? "Cashier" : u.role}</span>
                 </td>
                 <td style={{ padding: "10px 12px", color: "#888", fontSize: "13px" }}>
                   {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
@@ -143,6 +143,7 @@ export default function Members() {
                 style={{ width: "100%", padding: "8px", border: "1px solid #ddd", borderRadius: "4px", boxSizing: "border-box" }}>
                 <option value="customer">Client</option>
                 <option value="admin">Admin</option>
+                <option value="cashier">Cashier</option>
                 <option value="kitchen">Kitchen</option>
               </select>
             </div>
@@ -184,6 +185,7 @@ export default function Members() {
                 style={{ width: "100%", padding: "8px", border: "1px solid #ddd", borderRadius: "4px", boxSizing: "border-box" }}>
                 <option value="customer">Client</option>
                 <option value="admin">Admin</option>
+                <option value="cashier">Cashier</option>
                 <option value="kitchen">Kitchen</option>
               </select>
             </div>

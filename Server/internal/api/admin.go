@@ -1,10 +1,14 @@
 package api
 
 import (
+    "bytes"
     "encoding/json"
+    "fmt"
+    "io"
     "net/http"
     "strconv"
     "strings"
+    "time"
 
     "github.com/fnb/server/internal/models"
     "github.com/fnb/server/internal/sse"
@@ -418,10 +422,9 @@ func (h *AdminHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
         return
     }
     role := "customer"
-    if body.Role == "admin" {
-        role = "admin"
-    } else if body.Role == "kitchen" {
-        role = "kitchen"
+    switch body.Role {
+    case "admin", "cashier", "kitchen":
+        role = body.Role
     }
     hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
     if err != nil {
@@ -482,7 +485,7 @@ func (h *AdminHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
             return
         }
     }
-    if body.Role != "" && (body.Role == "admin" || body.Role == "customer" || body.Role == "kitchen") {
+    if body.Role != "" && (body.Role == "admin" || body.Role == "customer" || body.Role == "cashier" || body.Role == "kitchen") {
         if err := h.store.UpdateUserRole(id, body.Role); err != nil {
             writeJSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: "failed to update role"})
             return
@@ -495,4 +498,117 @@ func (h *AdminHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
         return
     }
     writeJSON(w, http.StatusOK, user)
+}
+
+type chatRequest struct {
+    Message string `json:"message"`
+}
+
+type geminiResponse struct {
+    Candidates []struct {
+        Content struct {
+            Parts []struct {
+                Text string `json:"text"`
+            } `json:"parts"`
+        } `json:"content"`
+    } `json:"candidates"`
+}
+
+func (h *AdminHandler) Chat(w http.ResponseWriter, r *http.Request) {
+    var req chatRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        writeJSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "invalid request"})
+        return
+    }
+
+    apiKey, err := h.store.GetSetting("ai_api_key")
+    if err != nil || apiKey == "" {
+        writeJSON(w, http.StatusBadRequest, models.ErrorResponse{Error: "AI API key not configured. Set it in Settings."})
+        return
+    }
+
+    menuItems, _ := h.store.ListMenuItems(true)
+    categories, _ := h.store.ListCategories()
+    orders, _, _ := h.store.ListAllOrders("", "", 1, 10)
+
+    var menuList, catList, orderList strings.Builder
+    for _, m := range menuItems {
+        menuList.WriteString(fmt.Sprintf("- %s (RM%.2f)\n", m.Name, m.Price))
+    }
+    for _, c := range categories {
+        catList.WriteString(fmt.Sprintf("- %s\n", c.Name))
+    }
+    for _, o := range orders {
+        orderList.WriteString(fmt.Sprintf("- Order %s: Table %d, Status: %s, Total: RM%.2f\n",
+            o.OrderID, o.TableNumber, o.Status, o.TotalAmount))
+    }
+
+    systemPrompt := fmt.Sprintf(`You are an AI assistant for a restaurant F&B ordering system called "FNB". You help restaurant staff with questions about menu, orders, and operations.
+
+Current restaurant data:
+
+MENU ITEMS:
+%s
+
+CATEGORIES:
+%s
+
+RECENT ORDERS:
+%s
+
+Answer concisely and helpfully based on this data.`, menuList.String(), catList.String(), orderList.String())
+
+    geminiReq := map[string]interface{}{
+        "contents": []map[string]interface{}{
+            {
+                "role": "user",
+                "parts": []map[string]string{
+                    {"text": systemPrompt + "\n\nUser question: " + req.Message},
+                },
+            },
+        },
+        "generationConfig": map[string]interface{}{
+            "temperature": 0.3,
+            "maxOutputTokens": 1024,
+        },
+    }
+
+    url := "https://generativelanguage.googleapis.com/v1beta/models/gemma-4-26b-a4b-it:generateContent?key=" + apiKey
+    body, _ := json.Marshal(geminiReq)
+
+    var (
+        resp     *http.Response
+        respBody []byte
+        lastErr  string
+    )
+    for attempt := 0; attempt < 3; attempt++ {
+        if attempt > 0 {
+            time.Sleep(time.Duration(attempt*2) * time.Second)
+        }
+        resp, err = http.Post(url, "application/json", bytes.NewReader(body))
+        if err != nil {
+            lastErr = err.Error()
+            continue
+        }
+        respBody, _ = io.ReadAll(resp.Body)
+        resp.Body.Close()
+        if resp.StatusCode == 500 {
+            lastErr = fmt.Sprintf("AI API error (%d): %s", resp.StatusCode, string(respBody))
+            continue
+        }
+        break
+    }
+    if resp == nil || resp.StatusCode != 200 {
+        writeJSON(w, http.StatusInternalServerError, models.ErrorResponse{Error: lastErr})
+        return
+    }
+
+    var geminiResp geminiResponse
+    json.Unmarshal(respBody, &geminiResp)
+    if len(geminiResp.Candidates) == 0 || len(geminiResp.Candidates[0].Content.Parts) == 0 {
+        writeJSON(w, http.StatusOK, map[string]string{"reply": "No response from AI."})
+        return
+    }
+
+    writeJSON(w, http.StatusOK, map[string]string{"reply": geminiResp.Candidates[0].Content.Parts[0].Text})
 }

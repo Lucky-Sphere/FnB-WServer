@@ -6,6 +6,7 @@ export default function Settings() {
   const [businessName, setBusinessName] = useState("FNB");
   const [openingHour, setOpeningHour] = useState("8");
   const [closingHour, setClosingHour] = useState("22");
+  const [aiApiKey, setAiApiKey] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -18,6 +19,7 @@ export default function Settings() {
         setBusinessName(data.business_name || "FNB");
         setOpeningHour(data.opening_hour || "8");
         setClosingHour(data.closing_hour || "22");
+        setAiApiKey(data.ai_api_key || "");
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     })();
@@ -32,6 +34,7 @@ export default function Settings() {
       await admin.settings.update("business_name", businessName.trim());
       await admin.settings.update("opening_hour", openingHour.trim());
       await admin.settings.update("closing_hour", closingHour.trim());
+      await admin.settings.update("ai_api_key", aiApiKey.trim());
       setMessage("Settings saved");
     } catch (e: any) {
       setMessage("Error: " + e.message);
@@ -89,6 +92,18 @@ export default function Settings() {
         style={{
           width: "100%", padding: "10px 12px", border: "1px solid #ddd",
           borderRadius: "6px", fontSize: "16px", marginBottom: 16, boxSizing: "border-box",
+        }}
+      />
+      <label style={{ display: "block", fontSize: "14px", fontWeight: 500, marginBottom: 6, color: "#555" }}>
+        AI API Key
+      </label>
+      <input
+        value={aiApiKey}
+        onChange={(e) => setAiApiKey(e.target.value)}
+        placeholder="Leave empty to disable AI chat"
+        style={{
+          width: "100%", padding: "10px 12px", border: "1px solid #ddd",
+          borderRadius: "6px", fontSize: "14px", marginBottom: 16, boxSizing: "border-box",
         }}
       />
       <button

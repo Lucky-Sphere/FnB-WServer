@@ -84,6 +84,8 @@ func (s *Store) migrate() error {
 		key TEXT PRIMARY KEY,
 		value TEXT NOT NULL
 	);
+	ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+	ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('customer', 'admin', 'cashier', 'kitchen'));
 	`
 	if _, err := s.db.Exec(query); err != nil {
 		return err

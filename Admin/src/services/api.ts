@@ -252,4 +252,12 @@ export const admin = {
         body: JSON.stringify({ key, value }),
       }),
   },
+
+  chat: {
+    send: (message: string) =>
+      request("/admin/ai/chat", {
+        method: "POST",
+        body: JSON.stringify({ message }),
+      }),
+  },
 };

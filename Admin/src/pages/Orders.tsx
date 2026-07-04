@@ -13,7 +13,7 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [details, setDetails] = useState<Record<number, Order>>({});
   const [startDate, setStartDate] = useState(todayStr());
@@ -25,7 +25,7 @@ export default function Orders() {
       setOrders(data.orders);
       setTotal(data.total);
     } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    finally { setInitialLoading(false); }
   }, [startDate, endDate]);
 
   useEffect(() => { setPage(1); loadOrders(1); }, [loadOrders]);
@@ -61,7 +61,7 @@ export default function Orders() {
     } catch (e: any) { alert(e.message); }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (initialLoading) return <p>Loading...</p>;
 
   const totalPaid = orders
     .filter((o) => o.status === "paid")
@@ -75,10 +75,10 @@ export default function Orders() {
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: 0 }}>Orders</h2>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <label style={{ fontSize: "13px", color: "#666" }}>From</label>
-          <input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); setLoading(true); }}
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
             style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px" }} />
           <label style={{ fontSize: "13px", color: "#666" }}>To</label>
-          <input type="date" value={endDate} onChange={(e) => { setEndDate(e.target.value); setLoading(true); }}
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
             style={{ padding: "6px 10px", border: "1px solid #ddd", borderRadius: "6px", fontSize: "13px" }} />
         </div>
       </div>

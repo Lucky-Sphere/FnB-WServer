@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { setToken, settings, getBusinessName } from "../services/api";
+import AIChat from "./AIChat";
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ export default function Layout() {
       <main style={{ padding: "24px" }}>
         <Outlet />
       </main>
+      <AIChat />
     </div>
   );
 }

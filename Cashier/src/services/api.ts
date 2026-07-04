@@ -65,7 +65,9 @@ export const auth = {
 
 export const orders = {
   list: async (): Promise<Order[]> => {
-    const res = await request<{ orders: Order[] }>("/admin/orders");
+    const today = new Date();
+    const d = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const res = await request<{ orders: Order[] }>(`/admin/orders?start_date=${d}&end_date=${d}&page=1&per_page=200`);
     return res.orders;
   },
   get: (id: number) => request<Order>(`/admin/orders/${id}`),

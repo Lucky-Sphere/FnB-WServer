@@ -145,7 +145,8 @@ func main() {
 		r.Get("/sales/hourly", adminHandler.GetHourlySales)
 		r.Get("/sales/hourly-today", adminHandler.GetHourlySalesToday)
 		r.Get("/sales/item-today", adminHandler.GetItemSalesPie)
-		r.Get("/stats/today", adminHandler.GetTodayStats)
+        r.Get("/stats/today", adminHandler.GetTodayStats)
+        r.Post("/ai/chat", adminHandler.Chat)
 	})
 
 	r.Route("/api/kitchen", func(r chi.Router) {
